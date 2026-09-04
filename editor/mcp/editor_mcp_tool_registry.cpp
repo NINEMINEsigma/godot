@@ -10,6 +10,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor_mcp_context.h"
+#include "editor_mcp_capture_tools.h"
 #include "editor_mcp_filesystem_tools.h"
 #include "editor_mcp_project_tools.h"
 #include "editor_mcp_resource_tools.h"
@@ -415,6 +416,7 @@ EditorMCPToolRegistry::EditorMCPToolRegistry() {
 	register_editor_mcp_filesystem_tools(*this);
 	register_editor_mcp_resource_tools(*this);
 	register_editor_mcp_project_tools(*this);
+	register_editor_mcp_capture_tools(*this);
 }
 
 EditorMCPToolRegistry::~EditorMCPToolRegistry() {

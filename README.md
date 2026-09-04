@@ -580,6 +580,117 @@ Get-NetTCPConnection -LocalPort 8765 -State Listen
 
 ---
 
+#### 5. 截图捕获 (2 个)
+
+##### `godot.editor.capture_viewport`
+
+通过 Godot 的 Viewport 纹理直接捕获编辑器视口截图（2D 场景视图或 3D 编辑器视口）。不走屏幕截图，即使编辑器窗口在其他虚拟桌面或被遮挡也能正常工作。
+
+**参数：**
+
+```json
+{
+  "target": "3d",
+  "viewport_index": 0,
+  "save_path": "D:/screenshots/viewport.png"
+}
+```
+
+| 参数 | 类型 | 默认 | 说明 |
+|------|------|------|------|
+| `target` | string | `"3d"` | 截取目标：`"2d"` 为 2D 场景视图，`"3d"` 为 3D 编辑器视口 |
+| `viewport_index` | integer | 0 | 3D 视口索引（0-3），仅 `target` 为 `"3d"` 时有效 |
+| `save_path` | string | 无 | 可选绝对文件路径。传入则将图片保存为 PNG 到该路径，不返回 base64 图片块 |
+
+**不传 `save_path` 的返回（多模态图片内容）：**
+
+```json
+{
+  "content": [
+    {
+      "type": "image",
+      "data": "iVBORw0KGgo...",
+      "mimeType": "image/png"
+    }
+  ],
+  "image": {
+    "format": "png",
+    "base64": "iVBORw0KGgo...",
+    "width": 1284,
+    "height": 747
+  },
+  "source": "3D editor viewport 0"
+}
+```
+
+**传 `save_path` 的返回（文本内容）：**
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Image saved to D:/screenshots/viewport.png (1284x747)"
+    }
+  ],
+  "saved": true,
+  "path": "D:/screenshots/viewport.png",
+  "source": "3D editor viewport 0",
+  "width": 1284,
+  "height": 747
+}
+```
+
+---
+
+##### `godot.editor.capture_window`
+
+捕获编辑器窗口或运行中的游戏窗口截图。
+
+- **`"editor"` 模式**：通过 Godot 的 Viewport 纹理获取编辑器主窗口渲染结果，不走屏幕截图，窗口在其他虚拟桌面或被遮挡也能正常工作。
+- **`"game"` 模式**：在 Windows 上使用 `PrintWindow` API 捕获运行中的游戏窗口原生内容，即使游戏窗口在其他虚拟桌面也能工作。其他平台回退到屏幕矩形截取。
+- **`"screen_rect"` 模式**：截取屏幕上任意矩形区域（通过操作系统屏幕截图）。
+
+**参数：**
+
+```json
+{
+  "target": "editor",
+  "save_path": "D:/screenshots/editor.png"
+}
+```
+
+| 参数 | 类型 | 默认 | 说明 |
+|------|------|------|------|
+| `target` | string | `"editor"` | 截取目标：`"editor"` 编辑器窗口、`"game"` 游戏窗口、`"screen_rect"` 屏幕矩形 |
+| `x` | integer | 0 | 屏幕 X 坐标（仅 `screen_rect`） |
+| `y` | integer | 0 | 屏幕 Y 坐标（仅 `screen_rect`） |
+| `width` | integer | 0 | 截取宽度（仅 `screen_rect`） |
+| `height` | integer | 0 | 截取高度（仅 `screen_rect`） |
+| `save_path` | string | 无 | 可选绝对文件路径。传入则将图片保存为 PNG 到该路径，不返回 base64 图片块 |
+
+**`save_path` 模式返回：**
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Image saved to D:/screenshots/editor.png (1858x1141)"
+    }
+  ],
+  "saved": true,
+  "path": "D:/screenshots/editor.png",
+  "source": "editor window",
+  "width": 1858,
+  "height": 1141
+}
+```
+
+> 两个截图工具均为只读操作，`restricted` 权限即可调用。
+
+---
+
 ### 调用示例
 
 #### PowerShell
@@ -810,3 +921,4 @@ console.log(tree);
 
 - **0.1.0** — 初始 HTTP MCP 实现
 - **0.2.0** — 添加 Session 管理、Token 认证、UTF-8 支持、文件系统、资源查询、项目运行工具
+- **0.3.0** — 添加截图捕获工具（编辑器视口、编辑器窗口、游戏窗口、屏幕矩形），支持 `save_path` 保存到文件
