@@ -97,6 +97,7 @@ if env.editor_build:
     SConscript("themes/SCsub")
     SConscript("translations/SCsub")
     SConscript("version_control/SCsub")
+    SConscript("mcp/SCsub")
 
     lib = env.add_library("editor", env.editor_sources)
     env.Prepend(LIBS=[lib])

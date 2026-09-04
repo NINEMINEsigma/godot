@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "editor_node.h"
+#include "mcp/editor_mcp_server.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
@@ -925,6 +926,8 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
+			EditorMCPServer::poll_singleton();
+
 			if (editor_data.is_scene_changed(-1)) {
 				scene_tabs->update_scene_tabs();
 			}
@@ -8439,6 +8442,7 @@ HashMap<String, Variant> EditorNode::get_initial_settings() {
 }
 
 EditorNode::EditorNode() {
+	EditorMCPServer::start_from_command_line();
 	DEV_ASSERT(!singleton);
 	singleton = this;
 
@@ -9784,6 +9788,7 @@ EditorNode::EditorNode() {
 }
 
 EditorNode::~EditorNode() {
+	EditorMCPServer::stop_singleton();
 	EditorInspector::cleanup_plugins();
 	EditorTranslationParser::get_singleton()->clean_parsers();
 	ResourceImporterScene::clean_up_importer_plugins();

@@ -500,6 +500,11 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--, ++", "Separator for user-provided arguments. Following arguments are not used by the engine, but can be read from `OS.get_cmdline_user_args()`.\n");
 #ifdef TOOLS_ENABLED
 	print_help_option("-e, --editor", "Start the editor instead of running the scene.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--mcp", "Enable the built-in MCP HTTP server for the editor.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--mcp-port <port>", "Set the built-in MCP HTTP server port (default: 8765).\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--mcp-bind <address>", "Set the built-in MCP HTTP server bind address (default: 127.0.0.1).\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--mcp-permission <mode>", "Set MCP permissions: restricted, developer, or full_access.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--mcp-token <token>", "Require this bearer token for built-in MCP HTTP requests.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("-p, --project-manager", "Start the project manager, even if a project is auto-detected.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--recovery-mode", "Start the editor in recovery mode, which disables features that can typically cause startup crashes, such as tool scripts, editor plugins, GDExtension addons, and others.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--debug-server <uri>", "Start the editor debug server (<protocol>://<host/IP>[:port], e.g. tcp://127.0.0.1:6007)\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -1119,6 +1124,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (arg == "--single-window" || arg == "--editor-pseudolocalization") {
 			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
 		}
+		if (arg == "--mcp") {
+			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
+			forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(arg);
+		}
+		if (arg == "--mcp-port" || arg == "--mcp-bind" || arg == "--mcp-permission" || arg == "--mcp-token") {
+			if (N) {
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(N->get());
+				forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(arg);
+				forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(N->get());
+			}
+		}
 		if (arg == "--audio-driver" ||
 				arg == "--display-driver" ||
 				arg == "--rendering-method" ||
@@ -1539,6 +1556,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "-e" || arg == "--editor") { // starts editor
 
 			editor = true;
+		} else if (arg == "--mcp") {
+			main_args.push_back(arg);
+		} else if (arg == "--mcp-port" || arg == "--mcp-bind") {
+			main_args.push_back(arg);
+			if (N) {
+				main_args.push_back(N->get());
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing argument for %s, aborting.\n", arg.utf8().get_data());
+				goto error;
+			}
 		} else if (arg == "-p" || arg == "--project-manager") { // starts project manager
 			project_manager = true;
 		} else if (arg == "--recovery-mode") { // Enables recovery mode.
